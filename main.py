@@ -23,9 +23,6 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 
 # #CONNECT TO DB
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-# we'll use Heroku postgres instead of file-based sqlite
-# postgres://jshffqlcidrkxb:c5156d53b07af1741ff7a8456e6505356a09591f090f730c6d07548323b1777c@ec2-52-73-155-171.compute-1.amazonaws.com:5432/d2vobu9do2c1os
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///blog.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
