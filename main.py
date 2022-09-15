@@ -23,7 +23,15 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 
 # #CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///blog.db')
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+# SQLAlchemy 1.4 removed the deprecated postgres dialect name, the name postgresql must be used instead now.
+# The dialect is the part before the :// in the URL.
+# SQLAlchemy 1.3 and earlier showed a deprecation warning but still accepted it.
+# To fix this, rename postgres:// in the URL to postgresql://.
+heroku_postgres_uri = os.environ.get('DATABASE_URL', 'sqlite:///blog.db')
+if heroku_postgres_uri.startswith("postgres://"):
+    heroku_postgres_uri = heroku_postgres_uri.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = heroku_postgres_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -60,7 +68,7 @@ class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(300), nullable=False)
     name = db.Column(db.String(100), nullable=False)
 
     # This will act like a List of BlogPost objects attached to each User.
@@ -226,8 +234,8 @@ def contact():
             connection.login(user=my_email, password=password)
             connection.sendmail(
                 from_addr=my_email,
-                to_addrs=my_email,
-                msg=f"Subject:new message from website! 👆\n\n"
+                to_addrs=[data['email'], my_email],
+                msg=f"Subject:Your message sent from jason-blog-flask website as below is received! 👆\n\n"
                     f"Name: {data['name']} \nemail: {data['email']}"
                     f"\nPhone: {data['phone_number']} "
                     f"\nMessage:{data['message']}".encode("utf-8"))
